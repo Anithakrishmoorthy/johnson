@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>index</title>
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);
+--bg:#f6f4ef;--sf:#fff;--tx:#1d2330;--mu:#5f6678;--bd:#dcd8cc;--ac:#1d4ed8;--neg:#c2410c;--pos:#15803d;--hl:#fff1c2}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#12151d;--sf:#1b202c;--tx:#e8ebf3;--mu:#a1a8bb;--bd:#2f3647;--ac:#7aa2ff;--neg:#ff9b62;--pos:#5fd68a;--hl:#4a3f10}}
+:root[data-theme="dark"]{--bg:#12151d;--sf:#1b202c;--tx:#e8ebf3;--mu:#a1a8bb;--bd:#2f3647;--ac:#7aa2ff;--neg:#ff9b62;--pos:#5fd68a;--hl:#4a3f10}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:16px/1.55 Georgia,"Iowan Old Style",serif}
+main{max-width:1000px;margin:0 auto;padding:28px 18px 60px}
+h1{font-size:clamp(26px,4.5vw,40px);line-height:1.12;margin:0 0 6px;letter-spacing:-.01em}
+h2{font-size:21px;margin:0 0 10px}h3{font-size:16px;margin:18px 0 8px}
+p.lead{color:var(--mu);max-width:68ch;margin:0 0 22px}
+section{background:var(--sf);border:1px solid var(--bd);border-radius:10px;padding:20px;margin-bottom:20px}
+label{display:block;font:600 14px system-ui,sans-serif;margin:12px 0 4px}
+textarea,input,select{width:100%;font:15px ui-monospace,Menlo,Consolas,monospace;background:var(--bg);color:var(--tx);border:1px solid var(--bd);border-radius:6px;padding:9px}
+textarea{min-height:130px;resize:vertical}
+.row{display:flex;gap:12px;flex-wrap:wrap}.row>div{flex:1;min-width:130px}
+button{font:600 15px system-ui,sans-serif;border:1px solid var(--ac);background:var(--ac);color:#fff;border-radius:6px;padding:10px 18px;cursor:pointer}
+:root[data-theme="dark"] button{color:#0b1330}@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) button{color:#0b1330}}
+button.ghost{background:transparent;color:var(--ac)}
+button:focus-visible,input:focus-visible,textarea:focus-visible,select:focus-visible{outline:3px solid var(--neg);outline-offset:2px}
+button:disabled{opacity:.6;cursor:wait}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.err{color:var(--neg);font:600 14px system-ui,sans-serif;margin-top:10px;min-height:1em}
+.banner{padding:12px 14px;border-radius:6px;font:600 15px system-ui,sans-serif;margin:0 0 14px;border:1px solid var(--bd)}
+.banner.bad{border-color:var(--neg);color:var(--neg)}.banner.good{border-color:var(--pos);color:var(--pos)}
+.tw{overflow-x:auto}table{border-collapse:collapse;font:14px system-ui,sans-serif;width:100%}
+th,td{padding:6px 10px;border-bottom:1px solid var(--bd);text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+th:first-child,td:first-child{text-align:left}
+td.neg{color:var(--neg);font-weight:700}td.diag{background:var(--hl)}
+.two{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;align-items:start}
+svg text{fill:var(--mu);font:11px system-ui,sans-serif}svg .t{fill:var(--tx);font-weight:700;font-size:13px}
+svg .vn{fill:var(--tx);font-weight:700;font-size:13px}
+.lg{font:13px system-ui,sans-serif;color:var(--mu);display:flex;gap:14px;flex-wrap:wrap;margin-top:4px}
+.lg i{display:inline-block;width:12px;height:3px;margin-right:5px;vertical-align:middle}
+.note{font-size:14px;color:var(--mu);margin-top:12px}.ok{color:var(--pos);font-weight:700}
+.proof{border-left:3px solid var(--ac);padding:2px 0 2px 14px;color:var(--mu);font-size:15px}
+</style>
+</head>
+<body>
+<main>
+<h1>Johnson’s all-pairs shortest paths</h1>
+<p class="lead">Experiment 5: find the cheapest route between every pair of vertices in a sparse directed graph, even when some edges have negative weights. Enter your own graph, or benchmark Johnson’s algorithm against Floyd-Warshall.</p>
+
+<section>
+<h2>1. Run Johnson’s algorithm on your graph</h2>
+<div class="row">
+ <div style="max-width:170px"><label for="n">Number of vertices</label><input id="n" type="number" min="2" max="40" value="5"></div>
+ <div style="max-width:260px"><label for="ex">Load an example</label>
+  <select id="ex"><option value="clrs">CLRS 5-vertex graph</option><option value="cycle">CLRS graph + negative cycle</option><option value="pos">Small all-positive graph</option></select></div>
+</div>
+<label for="e">Edges, one per line as “from to weight” (vertices are numbered from 0)</label>
+<textarea id="e" spellcheck="false">0 1 3
+0 2 8
+0 4 -4
+1 3 1
+1 4 7
+2 1 4
+3 0 2
+3 2 -5
+4 3 6</textarea>
+<div class="acts"><button id="run">Run Johnson</button><button class="ghost" id="load">Load example</button></div>
+<div class="err" id="err" role="alert"></div>
+<div id="out" hidden>
+ <div class="banner" id="ban"></div>
+ <div class="two">
+  <div><h3>Graph (negative edges in orange)</h3><svg id="gs" viewBox="0 0 400 340" width="100%" role="img" aria-label="Directed graph drawing"></svg></div>
+  <div><h3>Vertex potentials h(v) from Bellman-Ford</h3><div class="tw"><table id="ht"></table></div>
+   <h3>Reweighted edges w′ = w + h(u) − h(v)</h3><div class="tw"><table id="rt"></table></div></div>
+ </div>
+ <h3>All-pairs distance matrix D[i][j]</h3>
+ <div class="tw"><table id="dm"></table></div>
+ <p class="note">“∞” means no path exists. Orange values are negative distances.</p>
+ <div class="two"><div><h3>Look up a path</h3>
+  <div class="row"><div><label for="pf">From</label><input id="pf" type="number" min="0" value="0"></div><div><label for="pt">To</label><input id="pt" type="number" min="0" value="2"></div></div>
+  <div class="acts"><button class="ghost" id="pq">Show shortest path</button></div><p id="pr" class="note"></p></div></div>
+</div>
+</section>
+
+<section>
+<h2>2. Johnson vs Floyd-Warshall on random sparse graphs</h2>
+<div class="row">
+ <div><label for="bv">Vertex counts (comma separated)</label><input id="bv" value="100, 200, 400"></div>
+ <div style="max-width:170px"><label for="bk">Edges per vertex (E = k·V)</label><input id="bk" type="number" min="1" max="10" value="4"></div>
+</div>
+<div class="acts"><button id="bench">Run benchmark</button></div>
+<div class="err" id="berr" role="alert"></div>
+<div id="bout" hidden>
+ <div class="tw"><table><thead><tr><th>V</th><th>E</th><th>Negative edges</th><th>Johnson (ms)</th><th>Floyd-Warshall (ms)</th><th>Speed-up</th><th>Results match</th></tr></thead><tbody id="brows"></tbody></table></div>
+ <div class="two" style="margin-top:16px">
+  <div><svg id="c1" viewBox="0 0 440 280" width="100%" role="img" aria-label="Running time versus vertices"></svg>
+   <div class="lg"><span><i style="background:var(--ac)"></i>Johnson</span><span><i style="background:var(--neg)"></i>Floyd-Warshall</span></div></div>
+  <div><svg id="c2" viewBox="0 0 440 280" width="100%" role="img" aria-label="Speed-up versus vertices"></svg></div>
+ </div>
+ <p class="note">Random graphs get edge weights that include negative values but never form a negative cycle, as in the manual. Timings depend on your device and browser.</p>
+</div>
+</section>
+
+<section>
+<h2>Why reweighting keeps shortest paths intact</h2>
+<p class="proof">For any path p from u to v, the h terms along the path cancel in pairs, so w′(p) = w(p) + h(u) − h(v). Every u-to-v path shifts by the same constant, so the cheapest one stays the cheapest. Bellman-Ford’s potentials satisfy h(v) ≤ h(u) + w(u,v), which makes every w′ ≥ 0 and lets Dijkstra run safely.</p>
+</section>
+</main>
+
+<script>
+const INF=Infinity,$=id=>document.getElementById(id);
+const fmt=x=>x.toLocaleString(undefined,{maximumFractionDigits:2});
+const sh=x=>x===INF?"∞":x;
+function bellman(n,edges,src){
+ const d=new Array(n).fill(INF);d[src]=0;
+ for(let k=0;k<n-1;k++){let ch=false;for(const[u,v,w]of edges)if(d[u]+w<d[v]){d[v]=d[u]+w;ch=true}if(!ch)break}
+ for(const[u,v,w]of edges)if(d[u]+w<d[v])return null;
+ return d;
+}
+class Heap{constructor(){this.a=[]}get size(){return this.a.length}
+ push(x){const a=this.a;a.push(x);let i=a.length-1;while(i>0){const p=(i-1)>>1;if(a[p][0]<=a[i][0])break;[a[p],a[i]]=[a[i],a[p]];i=p}}
+ pop(){const a=this.a,top=a[0],last=a.pop();if(a.length){a[0]=last;let i=0;for(;;){let l=2*i+1,r=l+1,m=i;if(l<a.length&&a[l][0]<a[m][0])m=l;if(r<a.length&&a[r][0]<a[m][0])m=r;if(m===i)break;[a[m],a[i]]=[a[i],a[m]];i=m}}return top}}
+function dijkstra(n,adj,s,par){
+ const d=new Array(n).fill(INF);d[s]=0;const pq=new Heap();pq.push([0,s]);
+ while(pq.size){const[du,u]=pq.pop();if(du>d[u])continue;
+  for(const[v,w]of adj[u])if(du+w<d[v]){d[v]=du+w;if(par)par[v]=u;pq.push([d[v],v])}}
+ return d;
+}
+function johnson(n,edges,keep){
+ const aug=edges.concat(Array.from({length:n},(_,v)=>[n,v,0]));
+ const h=bellman(n+1,aug,n);if(!h)return null;
+ const adj=Array.from({length:n},()=>[]);const rw=[];
+ for(const[u,v,w]of edges){const wp=w+h[u]-h[v];adj[u].push([v,wp]);rw.push(wp)}
+ const D=[],P=[];
+ for(let u=0;u<n;u++){const par=keep?new Array(n).fill(-1):null;const du=dijkstra(n,adj,u,par);
+  D.push(du.map((x,v)=>x<INF?x-h[u]+h[v]:INF));if(keep)P.push(par)}
+ return{D,h:h.slice(0,n),rw,P};
+}
+function floyd(n,edges){
+ const D=Array.from({length:n},(_,i)=>{const r=new Float64Array(n).fill(INF);r[i]=0;return r});
+ for(const[u,v,w]of edges)if(w<D[u][v])D[u][v]=w;
+ for(let k=0;k<n;k++){const Dk=D[k];for(let i=0;i<n;i++){const dik=D[i][k];if(dik===INF)continue;const Di=D[i];for(let j=0;j<n;j++){const s=dik+Dk[j];if(s<Di[j])Di[j]=s}}}
+ return D;
+}
+const EX={
+ clrs:{n:5,e:"0 1 3\n0 2 8\n0 4 -4\n1 3 1\n1 4 7\n2 1 4\n3 0 2\n3 2 -5\n4 3 6"},
+ cycle:{n:5,e:"0 1 3\n0 2 8\n0 4 -4\n1 3 1\n1 4 7\n2 1 4\n3 0 2\n3 2 -5\n4 3 6\n4 0 -10"},
+ pos:{n:4,e:"0 1 2\n1 2 3\n0 2 7\n2 3 1\n3 0 4"}};
+$("load").onclick=()=>{const x=EX[$("ex").value];$("n").value=x.n;$("e").value=x.e};
+let last=null;
+
+function parse(){
+ const n=+$("n").value;
+ if(!Number.isInteger(n)||n<2||n>40)throw"Vertices must be a whole number from 2 to 40.";
+ const edges=[];const lines=$("e").value.split("\n").map(s=>s.trim()).filter(Boolean);
+ if(!lines.length)throw"Enter at least one edge.";
+ lines.forEach((ln,i)=>{const p=ln.split(/[\s,]+/);
+  if(p.length!==3||p.some(x=>x===""||isNaN(x)))throw"Line "+(i+1)+" should look like “0 1 3” (from, to, weight).";
+  const[u,v,w]=p.map(Number);
+  if(!Number.isInteger(u)||!Number.isInteger(v)||u<0||v<0||u>=n||v>=n)throw"Line "+(i+1)+": vertices must be whole numbers from 0 to "+(n-1)+".";
+  edges.push([u,v,w])});
+ return{n,edges};
+}
+
+function drawGraph(n,edges){
+ const W=400,H=340,cx=W/2,cy=H/2,R=Math.min(W,H)/2-34,pos=[];
+ for(let i=0;i<n;i++){const a=-Math.PI/2+2*Math.PI*i/n;pos.push([cx+R*Math.cos(a),cy+R*Math.sin(a)])}
+ const r=n>20?9:15;
+ let s='<defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--mu)"/></marker><marker id="an" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="var(--neg)"/></marker></defs>';
+ const has=new Set(edges.map(e=>e[0]+","+e[1]));
+ edges.forEach(([u,v,w])=>{
+  if(u===v)return;const[x1,y1]=pos[u],[x2,y2]=pos[v];
+  const dx=x2-x1,dy=y2-y1,L=Math.hypot(dx,dy),ux=dx/L,uy=dy/L;
+  const bend=has.has(v+","+u)?22:0,nx=-uy*bend,ny=ux*bend;
+  const sx=x1+ux*r,sy=y1+uy*r,ex=x2-ux*(r+3),ey=y2-uy*(r+3),mx=(x1+x2)/2+nx,my=(y1+y2)/2+ny;
+  const c=w<0?"var(--neg)":"var(--mu)";
+  s+='<path d="M'+sx+" "+sy+" Q"+mx+" "+my+" "+ex+" "+ey+'" fill="none" stroke="'+c+'" stroke-width="'+(w<0?2:1.3)+'" marker-end="url(#'+(w<0?"an":"ar")+')"/>';
+  if(n<=12)s+='<text x="'+(0.25*sx+0.5*mx+0.25*ex)+'" y="'+(0.25*sy+0.5*my+0.25*ey-3)+'" text-anchor="middle" style="fill:'+c+';font-weight:700">'+w+"</text>";
+ });
+ pos.forEach(([x,y],i)=>{s+='<circle cx="'+x+'" cy="'+y+'" r="'+r+'" fill="var(--sf)" stroke="var(--ac)" stroke-width="2"/><text class="vn" x="'+x+'" y="'+(y+4)+'" text-anchor="middle">'+i+"</text>"});
+ $("gs").innerHTML=s;
+}
+
+$("run").onclick=()=>{
+ const err=$("err");err.textContent="";$("out").hidden=true;
+ let g;try{g=parse()}catch(x){err.textContent=x;return}
+ const{n,edges}=g;
+ drawGraph(n,edges);
+ const res=johnson(n,edges,true);
+ $("out").hidden=false;
+ const ban=$("ban");
+ if(!res){ban.className="banner bad";ban.textContent="Negative cycle detected. Bellman-Ford could still relax an edge on the n-th pass, so shortest paths are not defined for this graph.";
+  for(const id of["ht","rt","dm"])$(id).innerHTML="";$("pr").textContent="";last=null;return}
+ last={n,edges,res};
+ const negs=edges.filter(e=>e[2]<0).length;
+ ban.className="banner good";ban.textContent="No negative cycle. "+n+" vertices, "+edges.length+" edges ("+negs+" negative). Every reweighted edge is ≥ 0, so Dijkstra ran from each vertex.";
+ $("ht").innerHTML="<tr><th>v</th>"+res.h.map((_,i)=>"<th>"+i+"</th>").join("")+"</tr><tr><td>h(v)</td>"+res.h.map(x=>"<td"+(x<0?' class="neg"':"")+">"+x+"</td>").join("")+"</tr>";
+ $("rt").innerHTML="<tr><th>Edge</th><th>w</th><th>w′</th></tr>"+edges.map((e,i)=>"<tr><td>"+e[0]+" → "+e[1]+"</td><td"+(e[2]<0?' class="neg"':"")+">"+e[2]+"</td><td>"+res.rw[i]+"</td></tr>").join("");
+ $("dm").innerHTML="<tr><th></th>"+res.D.map((_,j)=>"<th>"+j+"</th>").join("")+"</tr>"+res.D.map((r,i)=>"<tr><th>"+i+"</th>"+r.map((x,j)=>"<td class='"+(i===j?"diag ":"")+(x<0?"neg":"")+"'>"+sh(x)+"</td>").join("")+"</tr>").join("");
+ $("pf").max=$("pt").max=n-1;$("pr").textContent="";
+};
+$("pq").onclick=()=>{
+ if(!last){$("pr").textContent="Run Johnson on a graph without a negative cycle first.";return}
+ const{n,res}=last,a=+$("pf").value,b=+$("pt").value;
+ if(!(a>=0&&a<n&&b>=0&&b<n)||!Number.isInteger(a)||!Number.isInteger(b)){$("pr").textContent="Choose vertices from 0 to "+(n-1)+".";return}
+ if(res.D[a][b]===INF){$("pr").textContent="There is no path from "+a+" to "+b+".";return}
+ const path=[b];let c=b;while(c!==a){c=res.P[a][c];path.push(c)}
+ $("pr").textContent="Shortest path "+a+" → "+b+": "+path.reverse().join(" → ")+" with total cost "+res.D[a][b]+".";
+};
+
+function chart(svg,xs,series,o){
+ const W=440,H=280,L=58,R=14,T=34,B=44;
+ const all=series.flatMap(s=>s.v);const hi=Math.max(...all)*1.1;
+ const px=i=>xs.length==1?(L+W-R)/2:L+(W-L-R)*i/(xs.length-1),py=v=>T+(H-T-B)*(1-v/hi);
+ let s='<text class="t" x="'+L+'" y="18">'+o.title+"</text>";
+ for(let k=0;k<=4;k++){const v=hi*k/4,y=py(v);s+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+y+'" y2="'+y+'" stroke="var(--bd)"/><text x="'+(L-6)+'" y="'+(y+4)+'" text-anchor="end">'+(v>=100?Math.round(v):+v.toPrecision(2))+"</text>"}
+ xs.forEach((x,i)=>{s+='<text x="'+px(i)+'" y="'+(H-B+16)+'" text-anchor="middle">'+x+"</text>"});
+ s+='<text x="'+(W/2+L/2)+'" y="'+(H-8)+'" text-anchor="middle">Vertices (V)</text><text transform="translate(14,'+(H/2)+') rotate(-90)" text-anchor="middle">'+o.y+"</text>";
+ series.forEach(se=>{s+='<polyline fill="none" stroke="'+se.c+'" stroke-width="2.5" points="'+se.v.map((v,i)=>px(i)+","+py(v)).join(" ")+'"/>';
+  se.v.forEach((v,i)=>{s+='<circle cx="'+px(i)+'" cy="'+py(v)+'" r="4" fill="'+se.c+'"><title>'+se.n+" at V="+xs[i]+": "+fmt(v)+"</title></circle>"})});
+ svg.innerHTML=s;
+}
+
+$("bench").onclick=async()=>{
+ const err=$("berr");err.textContent="";const btn=$("bench");
+ const Vs=$("bv").value.split(/[\s,;]+/).filter(Boolean).map(Number),k=+$("bk").value;
+ if(!Vs.length||Vs.some(x=>!Number.isInteger(x)||x<5||x>800)){err.textContent="Vertex counts must be whole numbers from 5 to 800.";return}
+ if(!Number.isInteger(k)||k<1||k>10){err.textContent="Edges per vertex must be a whole number from 1 to 10.";return}
+ if(Vs.some(x=>k*x>x*(x-1))){err.textContent="That many edges does not fit in a graph with so few vertices.";return}
+ Vs.sort((a,b)=>a-b);btn.disabled=true;$("brows").innerHTML="";$("bout").hidden=false;
+ const J=[],F=[],S=[];
+ for(const n of Vs){
+  btn.textContent="Running V = "+n+" …";await new Promise(r=>setTimeout(r,30));
+  const pot=Array.from({length:n},()=>Math.random()*31|0),es=new Set();
+  while(es.size<k*n){const u=Math.random()*n|0,v=Math.random()*n|0;if(u!==v)es.add(u*n+v)}
+  const edges=[...es].map(c=>{const u=Math.floor(c/n),v=c%n;return[u,v,(Math.random()*16|0)+pot[u]-pot[v]]});
+  let t0=performance.now();const rj=johnson(n,edges,false);const tj=performance.now()-t0;
+  t0=performance.now();const DF=floyd(n,edges);const tf=performance.now()-t0;
+  let ok=!!rj;if(ok)for(let i=0;i<n&&ok;i++)for(let j=0;j<n;j++)if(rj.D[i][j]!==DF[i][j]){ok=false;break}
+  const negs=edges.filter(e=>e[2]<0).length;J.push(tj);F.push(tf);S.push(tf/Math.max(tj,.01));
+  $("brows").insertAdjacentHTML("beforeend","<tr><td>"+n+"</td><td>"+edges.length+"</td><td>"+negs+"</td><td>"+fmt(tj)+"</td><td>"+fmt(tf)+"</td><td>"+fmt(tf/Math.max(tj,.01))+"×</td><td class='"+(ok?"ok":"neg")+"'>"+(ok?"yes":"NO")+"</td></tr>");
+ }
+ chart($("c1"),Vs,[{n:"Johnson",v:J,c:"var(--ac)"},{n:"Floyd-Warshall",v:F,c:"var(--neg)"}],{title:"Running time",y:"Time (ms)"});
+ chart($("c2"),Vs,[{n:"Speed-up",v:S,c:"var(--pos)"}],{title:"Johnson speed-up over Floyd-Warshall",y:"Speed-up (×)"});
+ btn.disabled=false;btn.textContent="Run benchmark";
+};
+$("run").click();
+</script>
+</body>
+</html>
